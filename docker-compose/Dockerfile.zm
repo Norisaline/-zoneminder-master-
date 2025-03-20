@@ -1,0 +1,27 @@
+FROM ubuntu:20.04
+
+# Устанавливаем переменную окружения для временной зоны
+ENV TZ=Asia/Vladivostok
+
+# Устанавливаем tzdata и zoneminder без интерактивного выбора
+RUN apt-get update && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y \
+    tzdata \
+    zoneminder \
+    && rm -rf /var/lib/apt/lists/*
+
+# Устанавливаем временную зону
+RUN ln -fs /usr/share/zoneinfo/$TZ /etc/localtime && \
+    dpkg-reconfigure -f noninteractive tzdata
+
+# Копируем скрипт для запуска ZoneMinder
+COPY ./bkjaya1952-docker-zoneminder-master-MariaDB-Server-10.3.34-/startzm.sh /startzm.sh
+RUN chmod +x /startzm.sh
+
+# Устанавливаем переменные окружения для подключения к базе данных
+ENV ZM_DB_HOST=db
+ENV ZM_DB_USER=zmuser
+ENV ZM_DB_PASS=zmpass
+
+# Запускаем ZoneMinder
+CMD ["/startzm.sh"]

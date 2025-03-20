@@ -1,0 +1,10 @@
+FROM mariadb:10.3.34
+
+# Копируем SQL-скрипт для инициализации базы данных
+COPY ./bkjaya1952-docker-zoneminder-master-MariaDB-Server-10.3.34-/zm_create.sql /docker-entrypoint-initdb.d/
+
+# Устанавливаем переменные окружения
+ENV MYSQL_ROOT_PASSWORD=zoneminder
+ENV MYSQL_DATABASE=zm
+ENV MYSQL_USER=zmuser
+ENV MYSQL_PASSWORD=zmpass

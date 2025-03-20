@@ -1,0 +1,37 @@
+FROM php:8.2-apache
+
+# Устанавливаем необходимые зависимости
+RUN apt-get update && apt-get install -y \
+    lsb-release ca-certificates apt-transport-https curl gnupg2
+
+# Добавляем репозиторий Sury и его ключ (если вдруг нужен)
+RUN curl -sSL https://packages.sury.org/php/README.txt | bash && \
+    apt-key adv --fetch-keys https://packages.sury.org/php/apt.gpg && \
+    echo "deb https://packages.sury.org/php/ $(lsb_release -sc) main" | tee /etc/apt/sources.list.d/php.list && \
+    apt-get update
+
+# Устанавливаем модули PHP (без номера версии, так как `php:8.2-apache` уже содержит PHP 8.2)
+RUN apt-get install -y \
+    libapache2-mod-php \
+    php-mysql \
+    php-gd \
+    php-xml \
+    php-intl \
+    php-mbstring
+
+# Включаем PHP 8.2 в Apache
+RUN a2enmod php8.2
+
+# Включаем mod_rewrite (если нужен для .htaccess)
+RUN a2enmod rewrite
+
+# Копируем конфигурацию Apache
+COPY ./bkjaya1952-docker-zoneminder-master-MariaDB-Server-10.3.34-/zm.conf /etc/apache2/sites-available/000-default.conf
+
+# Копируем файлы ZoneMinder
+COPY ./bkjaya1952-docker-zoneminder-master-MariaDB-Server-10.3.34-/www /var/www/html
+
+# Перезапуск Apache
+CMD ["apache2-foreground"]
+
+

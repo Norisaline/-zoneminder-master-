@@ -1,0 +1,36 @@
+FROM ubuntu:focal
+
+# Устанавливаем переменную окружения для безвопросного установки
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Устанавливаем Apache, PHP и tzdata без запроса временной зоны
+RUN apt-get update && apt-get install -y \
+    apache2 \
+    libapache2-mod-php7.4 \
+    php7.4-mysql \
+    php7.4-gd \
+    php7.4-xml \
+    php7.4-intl \
+    php7.4-mbstring \
+    curl \
+    tzdata
+
+# Устанавливаем таймзону без интерактивных запросов
+RUN ln -fs /usr/share/zoneinfo/Asia/Vladivostok /etc/localtime && \
+    dpkg-reconfigure -f noninteractive tzdata
+
+# Включаем mod_rewrite (если нужен для .htaccess)
+RUN a2enmod rewrite
+
+# Копируем конфигурацию Apache
+COPY ./bkjaya1952-docker-zoneminder-master-MariaDB-Server-10.3.34-/zm.conf /etc/apache2/sites-available/000-default.conf
+
+# Включаем сайт
+RUN a2ensite 000-default.conf
+
+# Копируем файлы ZoneMinder
+COPY ./bkjaya1952-docker-zoneminder-master-MariaDB-Server-10.3.34-/www /var/www/html
+
+# Перезапуск Apache
+CMD ["apache2ctl", "-D", "FOREGROUND"]
+

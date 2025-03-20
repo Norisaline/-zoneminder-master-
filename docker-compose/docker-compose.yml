@@ -1,0 +1,43 @@
+services:
+  db:
+    build:
+      context: .
+      dockerfile: Dockerfile.mysql
+    container_name: zoneminder-db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: zoneminder
+      MYSQL_DATABASE: zm
+      MYSQL_USER: zmuser
+      MYSQL_PASSWORD: zmpass
+    volumes:
+      - db_data:/var/lib/mysql
+
+  apache:
+    build:
+      context: .
+      dockerfile: Dockerfile.apache
+    container_name: zoneminder-apache
+    restart: always
+    depends_on:
+      - db
+    ports:
+      - "8080:80"
+    volumes:
+      - ./bkjaya1952-docker-zoneminder-master-MariaDB-Server-10.3.34-/www:/var/www/html
+
+  zm:
+    build:
+      context: .
+      dockerfile: Dockerfile.zm
+    container_name: zoneminder-core
+    restart: always
+    depends_on:
+      - db
+    environment:
+      - ZM_DB_HOST=db
+      - ZM_DB_USER=zmuser
+      - ZM_DB_PASS=zmpass
+
+volumes:
+  db_data:
